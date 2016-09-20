@@ -1,0 +1,171 @@
+<link rel="import" href="../paper-material/paper-material.html">
+<link rel="import" href="../paper-icon-button/paper-icon-button.html">
+<link rel="import" href="../iron-icons/iron-icons.html">
+<!-- link rel="import" href="../iron-icons/hardware-icons.html"--> 
+<link rel="import" href="../iron-icons/editor-icons.html"> 
+<link rel="import" href="../iron-ajax/iron-ajax.html">
+<link rel="import" href="../paper-spinner/paper-spinner.html">
+
+<dom-module id="ir-comments">
+
+	<style>
+
+		.item-content {
+			padding-left: 30px;
+		}
+
+		div a{
+			font: small-caption;
+			text-decoration: none;
+    		color: #56646F;
+		}
+
+	</style>
+
+	<template>
+		<paper-spinner hidden="{{ receivedData }}" active="{{ !receivedData }}"></paper-spinner>
+		<ir-recursive hidden="{{ !receivedData }}" collapsed notify-url="{{ treeUrl }}" hide-root=true meta="{{ thisElement() }}"  url-delete="{{urlDelete}}" url-edit="{{urlEdit}}" url-create="{{urlCreate}}" url-get="{{urlGet}}" url-submit="{{urlSubmit}}" >
+			<template edit hidden="{{!data.autor.isCanEdit}}">
+				<div edit-nav>
+					<paper-icon-button icon="close" close-button></paper-icon-button>
+				</div>
+			</template>
+			<template elevation="1" create >
+				<div create-nav>
+					<paper-icon-button icon="close" close-button></paper-icon-button>
+				</div>
+				<div class="comment">
+					<iron-icon icon="editor:icons:question-answer"></iron-icon> <span class="date">{{data.displayCreatedDate}}</span> {{ data.content }}
+				</div>
+			</template>
+			<template elevation="1" delete hidden="{{!data.autor.isCanEdit}}">
+				<div delete-nav>
+					<paper-icon-button icon="close" close-button></paper-icon-button>
+				</div>
+				<div class="comment">
+					<p>Remove this comment?</p>
+					<iron-icon icon="editor:icons:question-answer"></iron-icon> <span class="date">{{data.displayCreatedDate}}</span> {{ data.content }}
+				</div>
+				<div class="comment-footer">
+				<div class="actions" children-toolbar>
+					<paper-button close-button>Cancel</paper-button>
+					<paper-button recursive-delete>Remove</paper-button>
+				</div>
+				<a href="#">{{ data.autor.displayName }}</a></div>
+			</template>
+			<template item>
+				<style>
+					[children-toolbar] {  }
+					[content] { padding: 5px 0px 25px 0px; }
+							
+					iron-icon {
+						color : #798c9a;
+						min-width: 24px;
+					}
+					.comment {
+						padding-left : 8px;
+						word-break: break-all;
+					}
+					.comment span.date{
+						background-color: #eeeeee;
+						padding: 2px 6px 2px 6px;
+						margin-right: 6px;
+					}	
+					.actions{
+    					display: inline;
+    					float: left;
+					}
+
+					.actions [nav-group] {
+					    display: inline;
+					}
+
+					.actions paper-button{
+						padding-left : 8px;
+						font: small-caption;
+						text-decoration: none;
+    					color: #56646F;
+					}
+					.comment-footer {
+						text-align : right;
+						display: inline-block;
+						line-height: 34px;
+						width:100%
+					}
+					.lm.children {
+						padding-left: 24px;
+					}
+
+				</style>
+					<div elevation="0" class="wrapper">
+						<div content>
+						<div class="comment" root-file="{{ !depth] }}">
+							<iron-icon icon="editor:icons:question-answer"></iron-icon> <span class="date">{{data.displayCreatedDate}}</span> {{ data.content }}
+						</div>
+						<div class="comment-footer">
+						<div class="actions" children-toolbar>
+									<paper-button create-button>Answer</paper-button>
+									<paper-button hidden="{{!data.autor.isCanEdit}}" edit-button>Edit</paper-button>
+									<paper-button hidden="{{!data.autor.isCanEdit}}" delete-button>Remove</paper-button>
+								<div nav-group>
+									<paper-button icon="expand-more" expand>more</paper-button>
+									<paper-button icon="expand-less" collapse>less</paper-button>
+								</div>
+						</div>
+						<a href="#">{{ data.autor.displayName }}</a></div>
+						</div>
+						<div class="lm children"></div>
+					</div>
+			</template>
+		</ir-recursive>
+	</template>
+	<script>
+		Polymer({
+			is : "ir-comments",
+
+			properties : {
+				treeUrl 	: { type : String, value : "", notify : true },		
+				isFirstTime : { type : Boolean, value : true },
+				receivedData : { type : Boolean, value : false },
+			},
+
+			ready : function() {
+				var ir = this.$$('ir-recursive');
+				ir.addEventListener('afterStamp', function(ev) {
+					this.set("receivedData", true)
+				}.bind(this));
+				
+				ir.addEventListener('beforeStamp', function(ev) {
+
+					debugger;
+
+					if(ev.detail.data.children){
+						for(var i=0, len=ev.detail.data.children.length; i<len; i++){
+							var date = new Date(ev.detail.data.children[i].created);
+							ev.detail.data.children[i].displayCreatedDate =  (date.getDate())+"/"+ (date.getMonth()+1)+"/"+ date.getFullYear() + "-" +  (date.getHours()) + ":" + (date.getMinutes());
+						}
+					}
+					if(ev.detail.data.created){
+							var date = new Date(ev.detail.data.created);
+							ev.detail.data.displayCreatedDate =  (date.getDate())+"/"+ (date.getMonth()+1)+"/"+ date.getFullYear() + "-" +  (date.getHours()) + ":" + (date.getMinutes());
+					}
+				}.bind(this));
+								
+				//if(this.isFirstTime)
+				//{
+				//	this.$.lsloader.url = this.fulllsUrl.replace(/\[path\]/, this.dir);
+				//	this.$.lsloader.generateRequest();				
+				//	this.isFirstTime = false;	
+				//}
+
+			},
+			
+			thisElement : function() {
+				return this;
+			},
+		
+		})
+
+	</script>
+
+</dom-module>
